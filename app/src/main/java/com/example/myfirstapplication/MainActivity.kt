@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -45,15 +46,23 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHost
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.myfirstapplication.ui.screens.HomeScreen
+import com.example.myfirstapplication.ui.screens.MenuScreen
 import com.example.myfirstapplication.ui.theme.MyFirstApplicationTheme
-
+import com.example.myfirstapplication.ui.screens.HomeScreen
+import com.example.myfirstapplication.ui.screens.MenuScreen
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-
-            Column(
+ComposeMultiScreenApp()
+            /*Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState()),
@@ -67,11 +76,11 @@ class MainActivity : ComponentActivity() {
                 //ModifierExample()
                 //ModifierExample2()
                 //ModifierExample3()
-            }
+            }*/
         }
     }
 }
-
+/*
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
     Text(
@@ -294,4 +303,20 @@ fun BoxExample2(){
 }
 fun clickAction(){
     println("Column Clicked")
+}
+*/
+@Composable
+fun ComposeMultiScreenApp(){
+    val navController = rememberNavController()
+    Surface(color = Color.White) {
+        SetupNavGraph(navController = navController)
+    }
+}
+
+@Composable
+fun SetupNavGraph(navController: NavHostController){
+    NavHost(navController = navController, startDestination = "menu"){
+        composable("menu"){ MenuScreen(navController)}
+        composable("home"){ HomeScreen(navController) }
+    }
 }
