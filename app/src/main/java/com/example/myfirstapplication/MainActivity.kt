@@ -1,67 +1,50 @@
 package com.example.myfirstapplication
-
-import android.graphics.Picture
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHost
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import com.example.myfirstapplication.ui.screens.HomeScreen
-import com.example.myfirstapplication.ui.screens.MenuScreen
-import com.example.myfirstapplication.ui.theme.MyFirstApplicationTheme
-import com.example.myfirstapplication.ui.screens.HomeScreen
-import com.example.myfirstapplication.ui.screens.MenuScreen
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        //enableEdgeToEdge()
         setContent {
-ComposeMultiScreenApp()
+            MainContent()
+//ComposeMultiScreenApp()
             /*Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -78,7 +61,664 @@ ComposeMultiScreenApp()
                 //ModifierExample3()
             }*/
         }
+
+
+        @Composable
+        fun MainContent() {
+            Scaffold(
+                bottomBar = { BottomMenu() },
+                content = { paddingValues ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues)
+                            .background(Color(red = 0, green = 1, blue = 0))
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.portada),
+                            contentDescription = "Fondo",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(450.dp)
+                                .drawWithContent {
+                                    drawContent()
+
+                                    drawRect(
+                                        brush = Brush.verticalGradient(
+                                            colors = listOf(
+                                                Color.Black,
+                                                Color.Transparent,
+                                                Color.Black
+                                            ),
+                                            startY = 0f,
+                                            endY = size.height
+                                        ),
+                                        size = size
+                                    )},
+                            contentScale = ContentScale.Crop
+                        )
+
+                        // Contenedor para los íconos
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.crunchi), // Ícono izquierdo
+                                    contentDescription = "Ícono Izquierdo",
+                                    tint = Color(red = 252, green = 94, blue = 1),
+                                    modifier = Modifier
+                                        .size(33.dp)
+                                        .clickable { /* Acción del ícono izquierdo */ }
+                                )
+
+                                Row {
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.baseline_cast_24), // Ícono derecho 1
+                                        contentDescription = "Ícono Derecho 1",
+                                        tint = Color.White,
+                                        modifier = Modifier
+                                            .size(33.dp)
+                                            .clickable { /* Acción del ícono derecho 1 */ }
+                                    )
+                                    Spacer(modifier = Modifier.width(16.dp))
+                                    Icon(
+                                        painter = painterResource(id = R.drawable.lupa), // Ícono derecho 2
+                                        contentDescription = "Ícono Derecho 2",
+                                        tint = Color.White,
+                                        modifier = Modifier
+                                            .size(33.dp)
+                                            .clickable { /* Acción del ícono derecho 2 */ }
+                                    )
+                                }
+                            }
+
+                            // Contenido desplazable
+                            Column(
+                                modifier = Modifier
+                                    .padding(top = 320.dp)
+                            ) {
+                                Text(
+                                    text = "Dob | Sub",
+                                    color = Color.White,
+                                    fontSize = 15.sp
+                                )
+                                Text(
+                                    text = "Alcanza lo más alto y todo será tuyo",
+                                    color = Color.White,
+                                    fontSize = 15.sp,
+                                    modifier = Modifier.padding(top = 10.dp)
+                                )
+                                Text(
+                                    text = "En la cima de la torre encontrarás todo lo que existe.",
+                                    color = Color.White,
+                                    fontSize = 15.sp,
+                                    modifier = Modifier.padding(top = 18.dp)
+                                )
+                                Row(
+                                    modifier = Modifier.padding(top = 16.dp)
+                                ) {
+                                    Button(
+                                        onClick = { /* Acción del botón 1 */ },
+                                        shape = RoundedCornerShape(0.dp),
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = Color(252, 94, 1),
+                                            contentColor = Color.Black
+                                        ),
+                                        modifier = Modifier
+                                            .padding(end = 12.dp)
+                                            .width(315.dp)
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Filled.PlayArrow,
+                                            contentDescription = "Reproducir",
+                                            tint = Color.Black,
+                                            modifier = Modifier.size(25.dp)
+                                        )
+                                        BasicText(
+                                            text = " SEGUIR VIENDO T1 E1",
+                                            style = TextStyle(
+                                                fontSize = 15.sp,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                        )
+                                    }
+
+                                    Spacer(modifier = Modifier.width(20.dp))
+
+                                    // Marcador
+                                    Box(
+                                        modifier = Modifier
+                                            .size(38.dp)
+                                            .border(2.dp, Color(252, 94, 1))
+                                            .padding(4.dp)
+                                    ) {
+                                        Image(
+                                            painter = painterResource(id = R.drawable.img),
+                                            contentDescription = "Marcador",
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(20.dp))
+                                Text(
+                                    text = "NUESTRAS RECOMENDACIONES",
+                                    fontSize = 20.sp,
+                                    color = Color.White
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+
+                                // Lista de categorías con viewers
+                                LazyRow(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    items(listOf(
+                                        CategoryData("Overwatch 2", R.drawable.onepiece),
+                                        CategoryData("Fortnite", R.drawable.dragonball),
+                                        CategoryData("Tom Clancy's R6", R.drawable.demon)
+                                    )) { category ->
+                                        CategoryCard(category.title, category.imageRes)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            )
+        }
+
+        data class CategoryData(val title: String, val imageRes: Int)
+
+        @Composable
+        fun CategoryCard(title: String, imageRes: Int) {
+            Card(
+                shape = RoundedCornerShape(8.dp),
+                modifier = Modifier
+                    .width(130.dp)
+                    .padding(vertical = 8.dp)
+                    .background(Color(red = 0, green = 1, blue = 0))
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.Start,
+                    modifier = Modifier
+                        .background(Color(red = 0, green = 1, blue = 0))
+                ) {
+                    Image(
+                        painter = painterResource(id = imageRes),
+                        contentDescription = title,
+                        modifier = Modifier.height(165.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                    Text(
+                        text = title,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 14.sp,
+                        color = Color.White,
+                        modifier = Modifier.padding(top = 6.dp, start = 6.dp),
+                        textAlign = TextAlign.Left
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = "Dob | Sub",
+                            fontSize = 12.sp,
+                            color = Color.Gray,
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
+                        Image(
+                            painter = painterResource(id = R.drawable.trespuntos),
+                            modifier = Modifier.size(24.dp),
+                            contentDescription = "Marcador"
+                        )
+                    }
+                }
+            }
+        }
+
+        @Composable
+        fun BottomMenu() {
+            Row(
+                modifier = Modifier
+                    .background(Color(36, 37, 42))
+                    .padding(top = 3.dp)
+                    .fillMaxWidth()
+                    .padding(start = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                BottomMenuItem(
+                    icon = Icons.Default.Home,
+                    text = "Inicio",
+                    iconSize = 35.dp
+                )
+                BottomMenuItem(
+                    painter = painterResource(id = R.drawable.baseline_bookmark_24),
+                    text = "Mis listas",
+                    iconSize = 35.dp
+                )
+                BottomMenuItem(
+                    painter = painterResource(id = R.drawable.baseline_content_copy_24),
+                    text = "Explorar",
+                    iconSize = 35.dp
+                )
+                BottomMenuItem(
+                    painter = painterResource(id = R.drawable.baseline_auto_awesome_24),
+                    text = "Simulcasts",
+                    iconSize = 35.dp
+                )
+                BottomMenuItemWithRoundImage(
+                    imageRes = R.drawable.yo,
+                    contentDescription = "Marcador",
+                    text = "Cuenta"
+                )
+            }
+
+        }
+
+        @Composable
+        fun BottomMenuItem(
+            icon: androidx.compose.ui.graphics.vector.ImageVector? = null,
+            painter: androidx.compose.ui.graphics.painter.Painter? = null,
+            text: String,
+            iconSize: Dp // Agregar tamaño como parámetro
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                if (icon != null) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = text,
+                        tint = Color(252, 94, 1),
+                        modifier = Modifier.size(iconSize)
+                    )
+                } else if (painter != null) {
+                    Icon(
+                        painter = painter,
+                        contentDescription = text,
+                        tint = Color.White,
+                        modifier = Modifier.size(iconSize)
+                    )
+                }
+                Text(text = text, color = Color.White, fontSize = 12.sp)
+            }
+        }
+        @Composable
+        fun BottomMenuItemWithRoundImage(imageRes: Int, contentDescription: String, text: String) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(bottom = 8.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(CircleShape)
+                        .background(Color.Transparent)
+                        .clickable {  }
+                ) {
+                    Image(
+                        painter = painterResource(id = imageRes),
+                        contentDescription = contentDescription,
+                        modifier = Modifier.fillMaxSize(), // Ocupa todo el botón
+                        contentScale = ContentScale.Crop // Asegúrate de que la imagen se recorte adecuadamente
+                    )
+                }
+
+                // Texto debajo del ícono
+                Text(
+                    text = text,
+                    color = Color.White, // Asegúrate de que el texto sea visible
+                    fontSize = 12.sp
+                )
+            }
+        }
+        @Composable
+        fun BottomMenuItem(icon: androidx.compose.ui.graphics.vector.ImageVector? = null, painter: androidx.compose.ui.graphics.painter.Painter? = null, text: String) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                if (icon != null) {
+                    Icon(imageVector = icon, contentDescription = text, tint = Color(252, 94, 1))
+                } else if (painter != null) {
+                    Icon(painter = painter, contentDescription = text, tint = Color.White)
+                }
+                Text(text = text, color = Color.White, fontSize = 12.sp)
+            }
+        }
+
+
+
+    }@Composable
+    fun MainContent() {
+        Scaffold(
+            bottomBar = { BottomMenu() },
+            content = { paddingValues ->
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                        .background(Color(red = 0, green = 1, blue = 0))
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.portada),
+                        contentDescription = "Fondo",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(450.dp)
+                            .drawWithContent {
+                                drawContent()
+
+                                drawRect(
+                                    brush = Brush.verticalGradient(
+                                        colors = listOf(
+                                            Color.Black,
+                                            Color.Transparent,
+                                            Color.Black
+                                        ),
+                                        startY = 0f,
+                                        endY = size.height
+                                    ),
+                                    size = size
+                                )},
+                        contentScale = ContentScale.Crop
+                    )
+
+                    // Contenedor para los íconos
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Icon(
+                                painter = painterResource(id = R.drawable.crunchi), // Ícono izquierdo
+                                contentDescription = "Ícono Izquierdo",
+                                tint = Color(red = 252, green = 94, blue = 1),
+                                modifier = Modifier
+                                    .size(33.dp)
+                                    .clickable { /* Acción del ícono izquierdo */ }
+                            )
+
+                            Row {
+                                Icon(
+                                    painter = painterResource(id = R.drawable.baseline_cast_24), // Ícono derecho 1
+                                    contentDescription = "Ícono Derecho 1",
+                                    tint = Color.White,
+                                    modifier = Modifier
+                                        .size(33.dp)
+                                        .clickable { /* Acción del ícono derecho 1 */ }
+                                )
+                                Spacer(modifier = Modifier.width(16.dp))
+                                Icon(
+                                    painter = painterResource(id = R.drawable.lupa), // Ícono derecho 2
+                                    contentDescription = "Ícono Derecho 2",
+                                    tint = Color.White,
+                                    modifier = Modifier
+                                        .size(33.dp)
+                                        .clickable { /* Acción del ícono derecho 2 */ }
+                                )
+                            }
+                        }
+
+                        // Contenido desplazable
+                        Column(
+                            modifier = Modifier
+                                .padding(top = 320.dp)
+                        ) {
+                            Text(
+                                text = "Dob | Sub",
+                                color = Color.White,
+                                fontSize = 15.sp
+                            )
+                            Text(
+                                text = "Alcanza lo más alto y todo será tuyo",
+                                color = Color.White,
+                                fontSize = 15.sp,
+                                modifier = Modifier.padding(top = 10.dp)
+                            )
+                            Text(
+                                text = "En la cima de la torre encontrarás todo lo que existe.",
+                                color = Color.White,
+                                fontSize = 15.sp,
+                                modifier = Modifier.padding(top = 18.dp)
+                            )
+                            Row(
+                                modifier = Modifier.padding(top = 16.dp)
+                            ) {
+                                Button(
+                                    onClick = { /* Acción del botón 1 */ },
+                                    shape = RoundedCornerShape(0.dp),
+                                    colors = ButtonDefaults.buttonColors(
+                                        containerColor = Color(252, 94, 1),
+                                        contentColor = Color.Black
+                                    ),
+                                    modifier = Modifier
+                                        .padding(end = 12.dp)
+                                        .width(315.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.PlayArrow,
+                                        contentDescription = "Reproducir",
+                                        tint = Color.Black,
+                                        modifier = Modifier.size(25.dp)
+                                    )
+                                    BasicText(
+                                        text = " SEGUIR VIENDO T1 E1",
+                                        style = TextStyle(
+                                            fontSize = 15.sp,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    )
+                                }
+
+                                Spacer(modifier = Modifier.width(20.dp))
+
+                                // Marcador
+                                Box(
+                                    modifier = Modifier
+                                        .size(38.dp)
+                                        .border(2.dp, Color(252, 94, 1))
+                                        .padding(4.dp)
+                                ) {
+                                    Image(
+                                        painter = painterResource(id = R.drawable.img),
+                                        contentDescription = "Marcador",
+                                        modifier = Modifier.size(24.dp)
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(20.dp))
+                            Text(
+                                text = "NUESTRAS RECOMENDACIONES",
+                                fontSize = 20.sp,
+                                color = Color.White
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            // Lista de categorías con viewers
+                            LazyRow(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                items(listOf(
+                                    CategoryData("One Piece", R.drawable.onepiece),
+                                    CategoryData("Dragon Ball", R.drawable.dragonball),
+                                    CategoryData("Demon Slayer", R.drawable.demon)
+                                )) { category ->
+                                    CategoryCard(category.title, category.imageRes)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        )
     }
+
+    data class CategoryData(val title: String, val imageRes: Int)
+
+    @Composable
+    fun CategoryCard(title: String, imageRes: Int) {
+        Card(
+            shape = RoundedCornerShape(8.dp),
+            modifier = Modifier
+                .width(130.dp)
+                .padding(vertical = 8.dp)
+                .background(Color(red = 0, green = 1, blue = 0))
+        ) {
+            Column(
+                horizontalAlignment = Alignment.Start,
+                modifier = Modifier
+                    .background(Color(red = 0, green = 1, blue = 0))
+            ) {
+                Image(
+                    painter = painterResource(id = imageRes),
+                    contentDescription = title,
+                    modifier = Modifier.height(165.dp),
+                    contentScale = ContentScale.Crop
+                )
+                Text(
+                    text = title,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp,
+                    color = Color.White,
+                    modifier = Modifier.padding(top = 6.dp, start = 6.dp),
+                    textAlign = TextAlign.Left
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "Dob | Sub",
+                        fontSize = 12.sp,
+                        color = Color.Gray,
+                        modifier = Modifier.padding(start = 8.dp)
+                    )
+                    Image(
+                        painter = painterResource(id = R.drawable.trespuntos),
+                        modifier = Modifier.size(24.dp),
+                        contentDescription = "Marcador"
+                    )
+                }
+            }
+        }
+    }
+
+    @Composable
+    fun BottomMenu() {
+        Row(
+            modifier = Modifier
+                .background(Color(36, 37, 42))
+                .padding(top = 3.dp)
+                .fillMaxWidth()
+                .padding(start = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            BottomMenuItem(
+                icon = Icons.Default.Home,
+                text = "Inicio",
+                iconSize = 35.dp
+            )
+            BottomMenuItem(
+                painter = painterResource(id = R.drawable.baseline_bookmark_24),
+                text = "Mis listas",
+                iconSize = 35.dp
+            )
+            BottomMenuItem(
+                painter = painterResource(id = R.drawable.baseline_content_copy_24),
+                text = "Explorar",
+                iconSize = 35.dp
+            )
+            BottomMenuItem(
+                painter = painterResource(id = R.drawable.baseline_auto_awesome_24),
+                text = "Simulcasts",
+                iconSize = 35.dp
+            )
+            BottomMenuItemWithRoundImage(
+                imageRes = R.drawable.yo,
+                contentDescription = "Marcador",
+                text = "Cuenta"
+            )
+        }
+
+    }
+
+    @Composable
+    fun BottomMenuItem(
+        icon: androidx.compose.ui.graphics.vector.ImageVector? = null,
+        painter: androidx.compose.ui.graphics.painter.Painter? = null,
+        text: String,
+        iconSize: Dp // Agregar tamaño como parámetro
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            if (icon != null) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = text,
+                    tint = Color(252, 94, 1),
+                    modifier = Modifier.size(iconSize)
+                )
+            } else if (painter != null) {
+                Icon(
+                    painter = painter,
+                    contentDescription = text,
+                    tint = Color.White,
+                    modifier = Modifier.size(iconSize)
+                )
+            }
+            Text(text = text, color = Color.White, fontSize = 12.sp)
+        }
+    }
+    @Composable
+    fun BottomMenuItemWithRoundImage(imageRes: Int, contentDescription: String, text: String) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(bottom = 8.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(44.dp)
+                    .clip(CircleShape)
+                    .background(Color.Transparent)
+                    .clickable {  }
+            ) {
+                Image(
+                    painter = painterResource(id = imageRes),
+                    contentDescription = contentDescription,
+                    modifier = Modifier.fillMaxSize(), // Ocupa todo el botón
+                    contentScale = ContentScale.Crop // Asegúrate de que la imagen se recorte adecuadamente
+                )
+            }
+
+            // Texto debajo del ícono
+            Text(
+                text = text,
+                color = Color.White, // Asegúrate de que el texto sea visible
+                fontSize = 12.sp
+            )
+        }
+    }
+    @Composable
+    fun BottomMenuItem(icon: androidx.compose.ui.graphics.vector.ImageVector? = null, painter: androidx.compose.ui.graphics.painter.Painter? = null, text: String) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            if (icon != null) {
+                Icon(imageVector = icon, contentDescription = text, tint = Color(252, 94, 1))
+            } else if (painter != null) {
+                Icon(painter = painter, contentDescription = text, tint = Color.White)
+            }
+            Text(text = text, color = Color.White, fontSize = 12.sp)
+        }
+    }
+
 }
 /*
 @Composable
@@ -304,7 +944,7 @@ fun BoxExample2(){
 fun clickAction(){
     println("Column Clicked")
 }
-*/
+
 @Composable
 fun ComposeMultiScreenApp(){
     val navController = rememberNavController()
@@ -319,4 +959,4 @@ fun SetupNavGraph(navController: NavHostController){
         composable("menu"){ MenuScreen(navController)}
         composable("home"){ HomeScreen(navController) }
     }
-}
+}*/
