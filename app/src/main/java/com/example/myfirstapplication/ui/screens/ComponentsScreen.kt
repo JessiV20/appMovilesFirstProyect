@@ -1,4 +1,5 @@
 package com.example.myfirstapplication.ui.screens
+import android.app.AlertDialog
 import android.graphics.drawable.Icon
 import android.text.style.LineBackgroundSpan
 import android.widget.RadioGroup.OnCheckedChangeListener
@@ -6,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -19,8 +21,11 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Badge
@@ -52,6 +57,8 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SmallFloatingActionButton
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDrawerState
@@ -81,6 +88,9 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import androidx.compose.material3.AlertDialog
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 
 @Composable
 fun ComponentsScreen(navController: NavController){
@@ -227,6 +237,45 @@ fun ComponentsScreen(navController: NavController){
                         }
                     }
                 )
+                //SnackBars
+                NavigationDrawerItem(
+                    label = { Text("SnackBars") },
+                    selected = false,
+                    onClick = {
+                        component ="SnackBars"
+                        scope.launch {
+                            drawerState.apply {
+                                close()
+                            }
+                        }
+                    }
+                )
+                //AlertDialogs
+                NavigationDrawerItem(
+                    label = { Text("AlertDialogs") },
+                    selected = false,
+                    onClick = {
+                        component ="AlertDialogs"
+                        scope.launch {
+                            drawerState.apply {
+                                close()
+                            }
+                        }
+                    }
+                )
+                //AlertDialogs
+                NavigationDrawerItem(
+                    label = { Text("Bars") },
+                    selected = false,
+                    onClick = {
+                        component ="Bars"
+                        scope.launch {
+                            drawerState.apply {
+                                close()
+                            }
+                        }
+                    }
+                )
             }
         }
     ) {
@@ -259,6 +308,15 @@ fun ComponentsScreen(navController: NavController){
                 }
                 "TimePickers" -> {
                     TimePickers()
+            }
+                    "SnackBars" -> {
+                        SnackBars()
+            }
+                "AlertDialogs" -> {
+                    AlertDialogs()
+            }
+                    "Bars" -> {
+                        Bars()
             }
 
             }
@@ -631,3 +689,90 @@ fun TimePickers () {
         InputExample()
     }
     }
+@Composable
+fun SnackBars () {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceEvenly,
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+        val snackState = remember { SnackbarHostState() }
+        val snackScope = rememberCoroutineScope()
+        SnackbarHost(hostState = snackState, Modifier)
+        fun launchSnackBar(){
+            snackScope.launch { snackState.showSnackbar("the message was sent") }
+
+        }
+        Button(::launchSnackBar){
+            Text("Show Snachbar")
+        }
+    }
+}
+@Composable
+fun AlertDialogs () {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceEvenly,
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+        var showAlertDialog by remember { mutableStateOf(false) }
+        var selectedOption by remember { mutableStateOf("") }
+
+        if (showAlertDialog) {
+            AlertDialog(
+                icon = { Icon(Icons.Filled.Warning, contentDescription = "")},
+                title = { Text(text = "Confirm deletion") },
+                text = { Text(text = "Are ypu sure you want to delete the file?") },
+                onDismissRequest = {},
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            selectedOption = "confirm"
+                            showAlertDialog=false
+                        }
+                    ) { Text(text = "Confirm") }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = {
+                            selectedOption = "dismiss"
+                            showAlertDialog=false
+                        }
+                    ) { Text(text = "Confirm") }
+                }
+            )
+        }
+        Text(selectedOption)
+        Button(onClick = {showAlertDialog=true}) {
+            Text("show alert dialog")
+        }
+    }
+}
+@Composable
+fun Bars (){
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .background(Color.DarkGray)){
+     Row(
+         modifier = Modifier
+             .align(Alignment.TopCenter)
+             .fillMaxWidth()
+             .background(Color.Black)
+             .padding(10.dp, 50.dp, 10.dp, 10.dp),
+         horizontalArrangement = Arrangement.SpaceBetween
+     )
+     {
+         Icon(Icons.Filled.Menu, contentDescription = "", tint = Color.White)
+         Text(
+             text = "App Tittle",
+             color = Color.White,
+             fontWeight = FontWeight.Bold,
+             fontSize = 20.sp
+             )
+         Icon(Icons.Filled.Settings, contentDescription = "", tint = Color.White)
+
+     }
+    }
+}
