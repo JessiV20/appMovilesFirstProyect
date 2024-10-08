@@ -1,12 +1,11 @@
 package com.example.myfirstapplication.ui.screens
 import android.app.AlertDialog
-import android.graphics.drawable.Icon
-import android.text.style.LineBackgroundSpan
-import android.widget.RadioGroup.OnCheckedChangeListener
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,12 +17,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
@@ -52,7 +54,6 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.InputChipDefaults
 import androidx.compose.material3.LargeFloatingActionButton
@@ -63,47 +64,67 @@ import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimeInput
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberDrawerState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.launch
-import androidx.compose.material3.Switch
-import androidx.compose.material3.TimeInput
-import androidx.compose.material3.TimePicker
-import androidx.compose.material3.rememberDatePickerState
-import androidx.compose.material3.rememberTimePickerState
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
+import androidx.navigation.NavController
+import com.example.myfirstapplication.R
+import com.example.myfirstapplication.data.model.MenuModel
+import com.example.myfirstapplication.data.model.PostModel
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-import androidx.compose.material3.AlertDialog
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
-import com.example.myfirstapplication.data.model.PostModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ComponentsScreen(navController: NavController){
-    var component by remember { mutableStateOf("")}//para actualizar el valor de la variable en la interfaz
+
+    var menuOptions = arrayOf(
+        MenuModel(1,"Buttons", "Buttons",Icons.Filled.AccountBox),
+        MenuModel(2,"FloatingButtons", "FloatingButtons", Icons.Filled.DateRange),
+        MenuModel(2,"Chips", "Chips", Icons.Filled.DateRange),
+        MenuModel(2,"Progress", "Progress", Icons.Filled.DateRange),
+        MenuModel(2,"Sliders", "Sliders", Icons.Filled.DateRange),
+        MenuModel(2,"Switches", "Switches", Icons.Filled.DateRange),
+        MenuModel(2,"Badges", "Badges", Icons.Filled.DateRange),
+        MenuModel(2,"Content 2", "Content 2", Icons.Filled.DateRange),
+        MenuModel(2,"Content 2", "Content 2", Icons.Filled.DateRange),
+    )
+
+    var component by rememberSaveable { mutableStateOf("")}//para actualizar el valor de la variable en la interfaz
     var drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     var scope = rememberCoroutineScope()
     ModalNavigationDrawer(
@@ -113,6 +134,36 @@ fun ComponentsScreen(navController: NavController){
             ModalDrawerSheet {
                 Text("Menu", modifier = Modifier .padding(16.dp))
                 HorizontalDivider()
+
+                LazyColumn {
+                    items(menuOptions){item -> NavigationDrawerItem(
+                        icon = {Icon(item.icon, contentDescription = "")},
+                        label = { Text(text = item.title)},
+                        selected = false,
+                        onClick = {
+                            component =item.option
+                            scope.launch {
+                                drawerState.apply {
+                                    close()
+                                }
+                            }
+                        }
+                    )  }
+                }
+                /*
+                //Content1
+                NavigationDrawerItem(
+                    label = { Text("Conten1") },
+                    selected = false,
+                    onClick = {
+                        component ="Content1"
+                        scope.launch {
+                            drawerState.apply {
+                                close()
+                            }
+                        }
+                    }
+                )
                 //Buttons
                 NavigationDrawerItem(
                     label = { Text("Buttons") },
@@ -138,23 +189,7 @@ fun ComponentsScreen(navController: NavController){
                             }
                         }
                     }
-
                 )
-                //FloatingButtons
-                NavigationDrawerItem(
-                    label = { Text("FloatingButtons") },
-                    selected = false,
-                    onClick = {
-                        component ="FloatingButtons"
-                        scope.launch {
-                            drawerState.apply {
-                                close()
-                            }
-                        }
-                    }
-
-                )
-
                 //Chips
                 NavigationDrawerItem(
                     label = { Text("Chips") },
@@ -168,6 +203,7 @@ fun ComponentsScreen(navController: NavController){
                         }
                     }
                 )
+
                 //Progress
                 NavigationDrawerItem(
                     label = { Text("Progress") },
@@ -246,6 +282,7 @@ fun ComponentsScreen(navController: NavController){
                         }
                     }
                 )
+
                 //SnackBars
                 NavigationDrawerItem(
                     label = { Text("SnackBars") },
@@ -272,7 +309,7 @@ fun ComponentsScreen(navController: NavController){
                         }
                     }
                 )
-                //AlertDialogs
+                //Bars
                 NavigationDrawerItem(
                     label = { Text("Bars") },
                     selected = false,
@@ -284,13 +321,19 @@ fun ComponentsScreen(navController: NavController){
                             }
                         }
                     }
-                )
+                )*/
             }
         }
     ) {
         //Screen Content
         Column {
             when(component){
+                "Conten1" -> {
+                    Content1()
+                }
+                "Conten2" -> {
+                    Content2()
+                }
                 "Buttons" -> {
                     Buttons()
                 }
@@ -302,7 +345,7 @@ fun ComponentsScreen(navController: NavController){
                 }
                 "Progress" -> {
                     Progress()
-            }
+                }
                 "Sliders" -> {
                     Sliders()
                 }
@@ -317,17 +360,16 @@ fun ComponentsScreen(navController: NavController){
                 }
                 "TimePickers" -> {
                     TimePickers()
-            }
-                    "SnackBars" -> {
-                        SnackBars()
-            }
+                }
+                "SnackBars" -> {
+                    SnackBars()
+                }
                 "AlertDialogs" -> {
                     AlertDialogs()
-            }
-                    "Bars" -> {
-                        Bars()
-            }
-
+                }
+                "Bars" -> {
+                    Bars()
+                }
             }
         }
     }
@@ -335,6 +377,8 @@ fun ComponentsScreen(navController: NavController){
 
 
 }
+
+
 
 @Composable
 fun Content1(){
@@ -432,44 +476,47 @@ fun Chips() {
                 null
             }
         )
-        InputChipExample("Dismiss", {})
+        InputChipExample("Dismiss",{})
     }
 }
+
+
 @Composable
 fun InputChipExample(
     text: String,
     onDismiss: () -> Unit
 ){
-    var enabled by remember { mutableStateOf(true) }
-    if (!enabled) return
+    var enable by remember { mutableStateOf(true) }
+    if(!enable) return
+
     InputChip(
-        label= {Text(text)},
-        selected = enabled,
+        label = { Text(text) },
+        selected = enable,
         onClick = {
             onDismiss()
-            enabled = !enabled
+            enable= !enable
         },
         avatar = {
             Icon(
                 Icons.Filled.Person,
                 contentDescription = "",
                 Modifier.size(InputChipDefaults.AvatarSize)
-
             )
         },
+
         trailingIcon = {
             Icon(
                 Icons.Filled.Close,
                 contentDescription = "",
                 Modifier.size(InputChipDefaults.AvatarSize)
+            )
+        }
     )
+}
 
-}
-    )
-}
 
 @Composable
-fun Progress (){
+fun Progress() {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceEvenly,
@@ -484,32 +531,35 @@ fun Progress (){
         )
     }
 }
+
 @Composable
-fun Sliders (){
+fun Sliders() {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceEvenly,
         modifier = Modifier
             .fillMaxSize()
     ) {
-    var sliderPosition by remember { mutableStateOf(50f) }
-        Column  {
+        var sliderPosition by remember { mutableStateOf(50f) }
+        Column {
             Slider(
                 value = sliderPosition,
-                onValueChange = {sliderPosition = it},
-                steps = 10,
+                onValueChange = {sliderPosition=it},
+                steps=10,
                 valueRange = 0f..100f
             )
+            Text(
+                textAlign =TextAlign.Center,
+                modifier= Modifier.fillMaxWidth(),
+                text = sliderPosition.toString()
+
+            )
         }
-        Text(
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth(),
-            text = sliderPosition.toString()
-        )
     }
-    }
+}
+
 @Composable
-fun Switches (){
+fun Switches() {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceEvenly,
@@ -517,12 +567,12 @@ fun Switches (){
             .fillMaxSize()
     ) {
         var checked by remember { mutableStateOf(true) }
-
         Switch(
             checked = checked,
             onCheckedChange = {
-                checked = true
-            })
+                checked = it
+            }
+        )
 
         var checked2 by remember { mutableStateOf(true) }
         Switch(
@@ -535,37 +585,43 @@ fun Switches (){
                     Icon(
                         Icons.Filled.Check,
                         contentDescription = "",
-                        Modifier.size(InputChipDefaults.AvatarSize))
+                        Modifier.size(InputChipDefaults.AvatarSize)
+                    )
                 }
             }else{
                 null
             }
         )
+
         var checked3 by remember { mutableStateOf(true) }
         Checkbox(
             checked = checked3,
-            onCheckedChange = {checked3 = it }
+            onCheckedChange = {checked3=it}
         )
-    }}
+    }
+}
+
+
 @Composable
-fun Badges (){
+fun Badges() {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceEvenly,
         modifier = Modifier
             .fillMaxSize()
     ) {
-    var itemCount by remember { mutableStateOf(0) }
+        var itemCount by remember{ mutableStateOf(0)}
         BadgedBox(
-            badge = {if (itemCount>0){
-                Badge(
-                    containerColor = Color.Red,
-                    contentColor = Color.White
-                ){
-                    Text("$itemCount")
+            badge = {
+                if (itemCount > 0) {
+                    Badge(
+                        containerColor = androidx.compose.ui.graphics.Color.Red,
+                        contentColor = androidx.compose.ui.graphics.Color.White
+                    ){
+                        Text("$itemCount")
+                    }
                 }
             }
-        }
         ) {
             Icon(
                 imageVector = Icons.Filled.ShoppingCart,
@@ -573,72 +629,73 @@ fun Badges (){
             )
         }
         Button(
-            onClick = {itemCount++ }
+            onClick ={itemCount++}
         ){
-            Text("Add ithem")
+            Text("Add item")
         }
     }
 }
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DatePickers () {
+fun DatePickers() {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceEvenly,
         modifier = Modifier
             .fillMaxSize()
     ) {
+        var showDatePicker by remember { mutableStateOf(false) }
+        val datePickerState = rememberDatePickerState()
+        val selectedDate = datePickerState.selectedDateMillis?.let {
+            convertMillisToDate(it)
+        } ?: ""
 
-            var showDatePicker by remember { mutableStateOf(false) }
-            val datePickerState = rememberDatePickerState()
-            val selectedDate = datePickerState.selectedDateMillis?.let {
-                convertMillisToDate(it)
-            } ?: ""
+        Box(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            OutlinedTextField(
+                value = selectedDate,
+                onValueChange = { },
+                label = { Text("DOB") },
+                readOnly = true,
+                trailingIcon = {
+                    IconButton(onClick = { showDatePicker = !showDatePicker }) {
+                        Icon(
+                            imageVector = Icons.Default.DateRange,
+                            contentDescription = "Select date"
+                        )
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(64.dp)
+            )
 
-            Box(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                OutlinedTextField(
-                    value = selectedDate,
-                    onValueChange = { },
-                    label = { Text("DOB") },
-                    readOnly = true,
-                    trailingIcon = {
-                        IconButton(onClick = { showDatePicker = !showDatePicker }) {
-                            Icon(
-                                imageVector = Icons.Default.DateRange,
-                                contentDescription = "Select date"
-                            )
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(64.dp)
-                )
-
-                if (showDatePicker) {
-                    Popup(
-                        onDismissRequest = { showDatePicker = false },
-                        alignment = Alignment.TopStart
+            if (showDatePicker) {
+                Popup(
+                    onDismissRequest = { showDatePicker = false },
+                    alignment = Alignment.TopStart
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .offset(y = 64.dp)
+                            .shadow(elevation = 4.dp)
+                            .background(MaterialTheme.colorScheme.surface)
+                            .padding(16.dp)
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .offset(y = 64.dp)
-                                .shadow(elevation = 4.dp)
-                                .background(MaterialTheme.colorScheme.surface)
-                                .padding(16.dp)
-                        ) {
-                            DatePicker(
-                                state = datePickerState,
-                                showModeToggle = false
-                            )
-                        }
+                        DatePicker(
+                            state = datePickerState,
+                            showModeToggle = false
+                        )
                     }
                 }
             }
         }
     }
+}
 fun convertMillisToDate(millis: Long): String {
     val formatter = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
     return formatter.format(Date(millis))
@@ -646,25 +703,41 @@ fun convertMillisToDate(millis: Long): String {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DialExample(
+fun TimePickers() {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceEvenly,
+        modifier = Modifier
+            .fillMaxSize()
 
-) {
+    ) {
+        DialExample()
+        InputExample()
+    }
+}
 
-        val currentTime = Calendar.getInstance()
 
-        val timePickerState = rememberTimePickerState(
-            initialHour = currentTime.get(Calendar.HOUR_OF_DAY),
-            initialMinute = currentTime.get(Calendar.MINUTE),
-            is24Hour = true,
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DialExample() {
+    val currentTime = Calendar.getInstance()
+
+    val timePickerState = rememberTimePickerState(
+        initialHour = currentTime.get(Calendar.HOUR_OF_DAY),
+        initialMinute = currentTime.get(Calendar.MINUTE),
+        is24Hour = true,
+    )
+
+    Column {
+        TimePicker(
+            state = timePickerState,
         )
 
-        Column {
-            TimePicker(
-                state = timePickerState,
-            )
 
-        }
     }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InputExample(
@@ -683,43 +756,36 @@ fun InputExample(
             state = timePickerState,
         )
 
-        }
     }
+}
+
+
 
 @Composable
-fun TimePickers () {
+fun SnackBars() {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceEvenly,
         modifier = Modifier
             .fillMaxSize()
     ) {
-        DialExample()
-        InputExample()
-    }
-    }
-@Composable
-fun SnackBars () {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceEvenly,
-        modifier = Modifier
-            .fillMaxSize()
-    ) {
-        val snackState = remember { SnackbarHostState() }
+        val snackState = remember{ SnackbarHostState()}
         val snackScope = rememberCoroutineScope()
-        SnackbarHost(hostState = snackState, Modifier)
-        fun launchSnackBar(){
-            snackScope.launch { snackState.showSnackbar("the message was sent") }
 
+        SnackbarHost(hostState = snackState, Modifier)
+
+        fun launchSnackBar(){
+            snackScope.launch { snackState.showSnackbar("The message was sent") }
         }
+
         Button(::launchSnackBar){
-            Text("Show Snachbar")
+            Text("Show Snackbar")
         }
     }
 }
+
 @Composable
-fun AlertDialogs () {
+fun AlertDialogs() {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceEvenly,
@@ -729,36 +795,38 @@ fun AlertDialogs () {
         var showAlertDialog by remember { mutableStateOf(false) }
         var selectedOption by remember { mutableStateOf("") }
 
-        if (showAlertDialog) {
+        if(showAlertDialog){
             AlertDialog(
                 icon = { Icon(Icons.Filled.Warning, contentDescription = "")},
-                title = { Text(text = "Confirm deletion") },
-                text = { Text(text = "Are ypu sure you want to delete the file?") },
-                onDismissRequest = {},
-                confirmButton = {
+                title = { Text(text ="Confirm deletion")},
+                text = { Text(text ="Are you sure you want to delete the file?")},
+                onDismissRequest ={},
+                confirmButton={
                     TextButton(
                         onClick = {
-                            selectedOption = "confirm"
+                            selectedOption="Comfirm"
                             showAlertDialog=false
                         }
-                    ) { Text(text = "Confirm") }
+                    ) {Text(text="Confirm") }
                 },
-                dismissButton = {
+
+                dismissButton={
                     TextButton(
                         onClick = {
-                            selectedOption = "dismiss"
+                            selectedOption="Dismiss"
                             showAlertDialog=false
                         }
-                    ) { Text(text = "Confirm") }
+                    ) {Text(text="Dismiss") }
                 }
             )
         }
         Text(selectedOption)
-        Button(onClick = {showAlertDialog=true}) {
-            Text("show alert dialog")
+        Button(onClick = {showAlertDialog=true}){
+            Text("Show alert dialog")
         }
     }
 }
+@Preview
 @Composable
 fun Bars(){
     Box(modifier = Modifier
