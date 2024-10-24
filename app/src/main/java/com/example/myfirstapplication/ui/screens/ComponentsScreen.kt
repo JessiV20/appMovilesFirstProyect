@@ -1,12 +1,10 @@
 package com.example.myfirstapplication.ui.screens
-import android.app.AlertDialog
-import android.graphics.drawable.Icon
-import android.text.style.LineBackgroundSpan
-import android.widget.RadioGroup.OnCheckedChangeListener
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+//import androidx.compose.foundation.layout.FlowRowScopeInstance.align
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,23 +15,30 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material.icons.outlined.Favorite
+import androidx.compose.material.icons.outlined.Build
+import androidx.compose.material.icons.outlined.Call
+import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Badge
@@ -41,7 +46,6 @@ import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -52,9 +56,9 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.InputChip
 import androidx.compose.material3.InputChipDefaults
+import androidx.compose.material3.Label
 import androidx.compose.material3.LargeFloatingActionButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -64,233 +68,266 @@ import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderPositions
 import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TimeInput
+import androidx.compose.material3.TimePicker
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.contentColorFor
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberDrawerState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.launch
-import androidx.compose.material3.Switch
-import androidx.compose.material3.TimeInput
-import androidx.compose.material3.TimePicker
-import androidx.compose.material3.rememberDatePickerState
-import androidx.compose.material3.rememberTimePickerState
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Popup
+import androidx.navigation.NavController
+import androidx.navigation.Navigation
+import androidx.window.core.layout.WindowHeightSizeClass
+import androidx.window.core.layout.WindowWidthSizeClass
+import com.example.myfirstapplication.R
+import com.example.myfirstapplication.data.model.MenuModel
+import com.example.myfirstapplication.data.model.PostModel
+import com.example.myfirstapplication.ui.components.PostCard
+import com.example.myfirstapplication.ui.components.PostCardCompact
+import kotlinx.coroutines.launch
+import org.w3c.dom.Text
+import java.sql.Date
 import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.Date
 import java.util.Locale
-import androidx.compose.material3.AlertDialog
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
-import com.example.myfirstapplication.data.model.PostModel
 
 @Composable
-fun ComponentsScreen(navController: NavController){
-    var component by remember { mutableStateOf("")}//para actualizar el valor de la variable en la interfaz
-    var drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    var scope = rememberCoroutineScope()
+fun ComponentsScreen(navController: NavController) {
+    val menuOptions= arrayOf(
+        MenuModel(1,"Buttons","Buttons",Icons.Filled.AccountBox),
+        MenuModel(2,"Floating Buttons","FloatingButtons", Icons.Filled.DateRange),
+        MenuModel(3,"Chips","Chips",Icons.Filled.AccountBox),
+        MenuModel(4,"Progress","Progress", Icons.Filled.DateRange),
+        MenuModel(5,"Sliders","Sliders",Icons.Filled.AccountBox),
+        MenuModel(6,"Switches","Switches", Icons.Filled.DateRange),
+        MenuModel(7,"Badges","Badges",Icons.Filled.AccountBox),
+        MenuModel(8,"Date Pickers","DatePickers", Icons.Filled.DateRange),
+        MenuModel(9,"Time Pickers","TimePickers",Icons.Filled.AccountBox),
+        MenuModel(10,"Snack Bars","SnackBars", Icons.Filled.DateRange),
+        MenuModel(11,"Alert Dialogs","AlertDialogs",Icons.Filled.AccountBox),
+        MenuModel(12,"Bars","Bars", Icons.Filled.DateRange),
+        MenuModel(13,"Adaptive","Adaptive", Icons.Filled.DateRange),
+    )
+    var component by rememberSaveable { mutableStateOf("")}
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
     ModalNavigationDrawer(
-        drawerState = drawerState,//current state of drawer
-        //drawer content
+        drawerState = drawerState, //current state of drawer
+        // drawer content
         drawerContent = {
             ModalDrawerSheet {
-                Text("Menu", modifier = Modifier .padding(16.dp))
+                Text(text = "Menu", modifier = Modifier.padding(16.dp))
                 HorizontalDivider()
-                //Buttons
-                NavigationDrawerItem(
-                    label = { Text("Buttons") },
-                    selected = false,
-                    onClick = {
-                        component ="Buttons"
-                        scope.launch {
-                            drawerState.apply {
-                                close()
+                LazyColumn {
+                    items(menuOptions) { item ->
+                        NavigationDrawerItem(
+                            icon = { Icon(item.icon, contentDescription = "") },
+                            label = {Text(text =item.title) },
+                            selected = false,
+                            onClick = {
+                                component = item.option
+                                scope.launch {
+                                    drawerState.apply {
+                                        close()
+                                    }
+                                }
                             }
-                        }
+                        )
                     }
-                )
-                //FloatingButtons
-                NavigationDrawerItem(
-                    label = { Text("FloatingButtons") },
-                    selected = false,
-                    onClick = {
-                        component ="FloatingButtons"
-                        scope.launch {
-                            drawerState.apply {
-                                close()
-                            }
-                        }
-                    }
+                }
+                /*
+                                //Buttons
+                                NavigationDrawerItem(
+                                    label = { Text(text = "Buttons") },
+                                    selected = false,
+                                    onClick = {
+                                        component = "Buttons"
+                                        scope.launch {
+                                            drawerState.apply {
+                                                close()
+                                            }
+                                        }
+                                    }
+                                )
+                                //FloatingButtons
+                                NavigationDrawerItem(
+                                    label = { Text(text = "FloatingButtons") },
+                                    selected = false,
+                                    onClick = {
+                                        component = "FloatingButtons"
+                                        scope.launch {
+                                            drawerState.apply {
+                                                close()
+                                            }
+                                        }
+                                    }
+                                )
+                                //Chips
+                                NavigationDrawerItem(
+                                    label = { Text(text = "Chips") },
+                                    selected = false,
+                                    onClick = {
+                                        component = "Chips"
+                                        scope.launch {
+                                            drawerState.apply {
+                                                close()
+                                            }
+                                        }
+                                    }
+                                )
+                                //Progress
+                                NavigationDrawerItem(
+                                    label = { Text(text = "Progress") },
+                                    selected = false,
+                                    onClick = {
+                                        component = "Progress"
+                                        scope.launch {
+                                            drawerState.apply {
+                                                close()
+                                            }
+                                        }
+                                    }
+                                )
+                                //Slider
+                                NavigationDrawerItem(
+                                    label = { Text(text = "Sliders") },
+                                    selected = false,
+                                    onClick = {
+                                        component = "Sliders"
+                                        scope.launch {
+                                            drawerState.apply {
+                                                close()
+                                            }
+                                        }
+                                    }
+                                )
+                                //Switches
+                                NavigationDrawerItem(
+                                    label = { Text(text = "Switches") },
+                                    selected = false,
+                                    onClick = {
+                                        component = "Switches"
+                                        scope.launch {
+                                            drawerState.apply {
+                                                close()
+                                            }
+                                        }
+                                    }
+                                )
+                                NavigationDrawerItem(
+                                    label = { Text(text = "Badges") },
+                                    selected = false,
+                                    onClick = {
+                                        component = "Badges"
+                                        scope.launch {
+                                            drawerState.apply {
+                                                close()
+                                            }
+                                        }
+                                    }
+                                )
+                                NavigationDrawerItem(
+                                    label = { Text(text = "DatePickers") },
+                                    selected = false,
+                                    onClick = {
+                                        component = "DatePickers"
+                                        scope.launch {
+                                            drawerState.apply {
+                                                close()
+                                            }
+                                        }
+                                    }
+                                )
 
-                )
-                //FloatingButtons
-                NavigationDrawerItem(
-                    label = { Text("FloatingButtons") },
-                    selected = false,
-                    onClick = {
-                        component ="FloatingButtons"
-                        scope.launch {
-                            drawerState.apply {
-                                close()
-                            }
-                        }
-                    }
+                                NavigationDrawerItem(
+                                    label = { Text(text = "TimePickers") },
+                                    selected = false,
+                                    onClick = {
+                                        component = "TimePickers"
+                                        scope.launch {
+                                            drawerState.apply {
+                                                close()
+                                            }
+                                        }
+                                    }
+                                )
 
-                )
-
-                //Chips
-                NavigationDrawerItem(
-                    label = { Text("Chips") },
-                    selected = false,
-                    onClick = {
-                        component ="Chips"
-                        scope.launch {
-                            drawerState.apply {
-                                close()
-                            }
-                        }
-                    }
-                )
-                //Progress
-                NavigationDrawerItem(
-                    label = { Text("Progress") },
-                    selected = false,
-                    onClick = {
-                        component ="Progress"
-                        scope.launch {
-                            drawerState.apply {
-                                close()
-                            }
-                        }
-                    }
-                )
-                //Sliders
-                NavigationDrawerItem(
-                    label = { Text("Sliders") },
-                    selected = false,
-                    onClick = {
-                        component ="Sliders"
-                        scope.launch {
-                            drawerState.apply {
-                                close()
-                            }
-                        }
-                    }
-                )
-                //Switches
-                NavigationDrawerItem(
-                    label = { Text("Switches") },
-                    selected = false,
-                    onClick = {
-                        component ="Switches"
-                        scope.launch {
-                            drawerState.apply {
-                                close()
-                            }
-                        }
-                    }
-                )
-                //Badges
-                NavigationDrawerItem(
-                    label = { Text("Badges") },
-                    selected = false,
-                    onClick = {
-                        component ="Badges"
-                        scope.launch {
-                            drawerState.apply {
-                                close()
-                            }
-                        }
-                    }
-                )
-                //DatePickers
-                NavigationDrawerItem(
-                    label = { Text("DatePickers") },
-                    selected = false,
-                    onClick = {
-                        component ="DatePickers"
-                        scope.launch {
-                            drawerState.apply {
-                                close()
-                            }
-                        }
-                    }
-                )
-                //TimePickers
-                NavigationDrawerItem(
-                    label = { Text("TimePickers") },
-                    selected = false,
-                    onClick = {
-                        component ="TimePickers"
-                        scope.launch {
-                            drawerState.apply {
-                                close()
-                            }
-                        }
-                    }
-                )
-                //SnackBars
-                NavigationDrawerItem(
-                    label = { Text("SnackBars") },
-                    selected = false,
-                    onClick = {
-                        component ="SnackBars"
-                        scope.launch {
-                            drawerState.apply {
-                                close()
-                            }
-                        }
-                    }
-                )
-                //AlertDialogs
-                NavigationDrawerItem(
-                    label = { Text("AlertDialogs") },
-                    selected = false,
-                    onClick = {
-                        component ="AlertDialogs"
-                        scope.launch {
-                            drawerState.apply {
-                                close()
-                            }
-                        }
-                    }
-                )
-                //AlertDialogs
-                NavigationDrawerItem(
-                    label = { Text("Bars") },
-                    selected = false,
-                    onClick = {
-                        component ="Bars"
-                        scope.launch {
-                            drawerState.apply {
-                                close()
-                            }
-                        }
-                    }
-                )
+                                NavigationDrawerItem(
+                                        label = { Text(text = "SnackBars") },
+                                selected = false,
+                                onClick = {
+                                    component = "SnackBars"
+                                    scope.launch {
+                                        drawerState.apply {
+                                            close()
+                                        }
+                                    }
+                                }
+                                )
+                                NavigationDrawerItem(
+                                    label = { Text(text = "AlertDialogs") },
+                                    selected = false,
+                                    onClick = {
+                                        component = "AlertDialogs"
+                                        scope.launch {
+                                            drawerState.apply {
+                                                close()
+                                            }
+                                        }
+                                    }
+                                )
+                                NavigationDrawerItem(
+                                    label = { Text(text = "Bars") },
+                                    selected = false,
+                                    onClick = {
+                                        component = "Bars"
+                                        scope.launch {
+                                            drawerState.apply {
+                                                close()
+                                            }
+                                        }
+                                    }
+                                )
+                */
             }
         }
+
     ) {
-        //Screen Content
+        // Screen Content
         Column {
             when(component){
+                "Content1" -> {
+                    Content1()
+                }
+                "Content2" -> {
+                    Content2()
+                }
                 "Buttons" -> {
                     Buttons()
                 }
@@ -302,7 +339,7 @@ fun ComponentsScreen(navController: NavController){
                 }
                 "Progress" -> {
                     Progress()
-            }
+                }
                 "Sliders" -> {
                     Sliders()
                 }
@@ -317,34 +354,33 @@ fun ComponentsScreen(navController: NavController){
                 }
                 "TimePickers" -> {
                     TimePickers()
-            }
-                    "SnackBars" -> {
-                        SnackBars()
-            }
+                }
+                "SnackBars" -> {
+                    SnackBars()
+                }
                 "AlertDialogs" -> {
                     AlertDialogs()
-            }
-                    "Bars" -> {
-                        Bars()
-            }
-
+                }
+                "Bars" -> {
+                    Bars()
+                }
+                "Adaptive" -> {
+                    Adaptive()
+                }
             }
         }
     }
-
-
-
 }
 
 @Composable
 fun Content1(){
-    Text(text = "Content 1")
-}
-@Composable
-fun Content2(){
-    Text(text = "Content 2")
+    Text(text= "Content 1")
 }
 
+@Composable
+fun Content2(){
+    Text(text= "Content 2")
+}
 
 @Composable
 fun Buttons(){
@@ -354,51 +390,48 @@ fun Buttons(){
         modifier = Modifier
             .fillMaxSize()
     ){
-        Button(onClick = {}){
+        Button(onClick ={}){
             Text("Filled")
         }
-        FilledTonalButton(onClick = {}){
+        FilledTonalButton(onClick ={}) {
             Text("Tonal")
         }
-        OutlinedButton (onClick = {}){
-            Text("Outline")
+        OutlinedButton(onClick ={}) {
+            Text("Outlined")
         }
-        ElevatedButton (onClick = {}){
+        ElevatedButton(onClick ={}) {
             Text("Elevated")
         }
-        TextButton (onClick = {}){
+        TextButton(onClick ={}) {
             Text("Text")
         }
     }
 }
 
-
 @Composable
-fun FloatingButtons(){
-    Column (
+fun FloatingButtons() {
+    Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceEvenly,
         modifier = Modifier
             .fillMaxSize()
-    ){
+    ) {
         FloatingActionButton(onClick = {}) {
             Icon(Icons.Filled.Add,"")
         }
-        SmallFloatingActionButton (onClick = {}) {
+        SmallFloatingActionButton(onClick = {}) {
             Icon(Icons.Filled.Add,"")
         }
         LargeFloatingActionButton(onClick = {}) {
             Icon(Icons.Filled.Add,"")
         }
-        ExtendedFloatingActionButton (
+        ExtendedFloatingActionButton(
             onClick = {},
-            icon = {Icon(Icons.Filled.Add, "")},
-            text = { Text(text = "Extended FAB")}
+            icon = {Icon(Icons.Filled.Add,"")},
+            text = {Text(text = "Extended FAB")}
         )
-
     }
 }
-
 
 @Composable
 fun Chips() {
@@ -410,7 +443,7 @@ fun Chips() {
     ) {
         AssistChip(
             onClick = {},
-            label = { Text("Assist Chip")},
+            label = {Text("Assist Chip")},
             leadingIcon = {
                 Icon(Icons.Filled.AccountBox,"",
                     Modifier.size(AssistChipDefaults.IconSize))
@@ -419,16 +452,16 @@ fun Chips() {
         var selected by remember { mutableStateOf(false) }
         FilterChip(
             selected = selected,
-            onClick = {selected=!selected},
+            onClick = {selected = !selected},
             label = { Text("Filter Chip")},
-            leadingIcon = if(selected){
+            leadingIcon = if (selected){
                 {
                     Icon(
                         Icons.Filled.AccountBox, "",
                         Modifier.size(AssistChipDefaults.IconSize)
                     )
                 }
-            }else {
+            } else {
                 null
             }
         )
@@ -437,45 +470,46 @@ fun Chips() {
 }
 @Composable
 fun InputChipExample(
-    text: String,
-    onDismiss: () -> Unit
+    text:String,
+    onDismiss:()->Unit
 ){
     var enabled by remember { mutableStateOf(true) }
-    if (!enabled) return
+    if(!enabled) return
+
     InputChip(
-        label= {Text(text)},
+        label={ Text(text) },
         selected = enabled,
         onClick = {
             onDismiss()
             enabled = !enabled
         },
-        avatar = {
+        avatar={
+            Icon(
+                Icons.Filled.Person,
+                contentDescription="",
+                Modifier.size(InputChipDefaults.AvatarSize)
+            )
+        },
+        trailingIcon= {
             Icon(
                 Icons.Filled.Person,
                 contentDescription = "",
                 Modifier.size(InputChipDefaults.AvatarSize)
 
             )
-        },
-        trailingIcon = {
-            Icon(
-                Icons.Filled.Close,
-                contentDescription = "",
-                Modifier.size(InputChipDefaults.AvatarSize)
-    )
-
-}
+        }
     )
 }
 
 @Composable
-fun Progress (){
+fun Progress() {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceEvenly,
         modifier = Modifier
             .fillMaxSize()
-    ) {
+    )
+    {
         LinearProgressIndicator(
             modifier = Modifier.fillMaxWidth()
         )
@@ -484,191 +518,224 @@ fun Progress (){
         )
     }
 }
+
 @Composable
-fun Sliders (){
+fun Sliders() {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceEvenly,
         modifier = Modifier
             .fillMaxSize()
-    ) {
-    var sliderPosition by remember { mutableStateOf(50f) }
-        Column  {
+    ){
+        var sliderPosition by remember { mutableStateOf(50f) }
+        Column {
             Slider(
                 value = sliderPosition,
-                onValueChange = {sliderPosition = it},
+                onValueChange ={sliderPosition= it},
                 steps = 10,
                 valueRange = 0f..100f
             )
+            Text(
+                textAlign =TextAlign.Center,
+                modifier= Modifier.fillMaxWidth(),
+                text =sliderPosition.toString()
+            )
         }
-        Text(
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth(),
-            text = sliderPosition.toString()
-        )
     }
-    }
+}
+
 @Composable
-fun Switches (){
+fun Switches() {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceEvenly,
         modifier = Modifier
             .fillMaxSize()
-    ) {
+    ){
         var checked by remember { mutableStateOf(true) }
-
         Switch(
             checked = checked,
             onCheckedChange = {
-                checked = true
-            })
-
+                checked = it
+            }
+        )
         var checked2 by remember { mutableStateOf(true) }
         Switch(
-            checked = checked2,
+            checked = checked,
             onCheckedChange = {
-                checked2 = it
+                checked = it
             },
             thumbContent = if (checked2){
                 {
                     Icon(
                         Icons.Filled.Check,
-                        contentDescription = "",
-                        Modifier.size(InputChipDefaults.AvatarSize))
+                        contentDescription="",
+                        Modifier.size(InputChipDefaults.AvatarSize)
+                    )
                 }
-            }else{
+            } else{
                 null
             }
         )
         var checked3 by remember { mutableStateOf(true) }
         Checkbox(
             checked = checked3,
-            onCheckedChange = {checked3 = it }
+            onCheckedChange = {checked3=it}
         )
-    }}
+    }
+}
 @Composable
-fun Badges (){
+fun Badges() {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceEvenly,
         modifier = Modifier
             .fillMaxSize()
-    ) {
-    var itemCount by remember { mutableStateOf(0) }
+    ){
+        var itemCount by remember { mutableStateOf(0) }
         BadgedBox(
-            badge = {if (itemCount>0){
-                Badge(
-                    containerColor = Color.Red,
-                    contentColor = Color.White
-                ){
-                    Text("$itemCount")
+            badge = {
+                if (itemCount > 0) {
+                    Badge(
+                        containerColor = Color.Red,
+                        contentColor = Color.White
+                    ){
+                        Text("itemCount")
+                    }
                 }
             }
-        }
         ) {
             Icon(
                 imageVector = Icons.Filled.ShoppingCart,
-                contentDescription = ""
+                contentDescription=""
             )
         }
         Button(
-            onClick = {itemCount++ }
+            onClick ={ itemCount++}
         ){
-            Text("Add ithem")
+            Text("add item")
         }
     }
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DatePickers () {
+fun DatePickers() {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceEvenly,
-        modifier = Modifier
-            .fillMaxSize()
+        modifier = Modifier.fillMaxSize()
     ) {
+        var showDatePicker by remember { mutableStateOf(false) }
+        val datePickerState = rememberDatePickerState()
+        val selectedDate = datePickerState.selectedDateMillis?.let {
+            convertMillisToDate(it)
+        } ?: ""
 
-            var showDatePicker by remember { mutableStateOf(false) }
-            val datePickerState = rememberDatePickerState()
-            val selectedDate = datePickerState.selectedDateMillis?.let {
-                convertMillisToDate(it)
-            } ?: ""
+        Box(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            OutlinedTextField(
+                value = selectedDate,
+                onValueChange = { },
+                label = { Text("DOB") },
+                readOnly = true,
+                trailingIcon = {
+                    IconButton(onClick = { showDatePicker = !showDatePicker }) {
+                        Icon(
+                            imageVector = Icons.Default.DateRange,
+                            contentDescription = "Select date"
+                        )
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(64.dp)
+            )
 
-            Box(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                OutlinedTextField(
-                    value = selectedDate,
-                    onValueChange = { },
-                    label = { Text("DOB") },
-                    readOnly = true,
-                    trailingIcon = {
-                        IconButton(onClick = { showDatePicker = !showDatePicker }) {
-                            Icon(
-                                imageVector = Icons.Default.DateRange,
-                                contentDescription = "Select date"
-                            )
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(64.dp)
-                )
-
-                if (showDatePicker) {
-                    Popup(
-                        onDismissRequest = { showDatePicker = false },
-                        alignment = Alignment.TopStart
+            if (showDatePicker) {
+                Popup(
+                    onDismissRequest = { showDatePicker = false },
+                    alignment = Alignment.TopStart
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .offset(y = 64.dp)
+                            .shadow(elevation = 4.dp)
+                            .background(MaterialTheme.colorScheme.surface)
+                            .padding(16.dp)
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .offset(y = 64.dp)
-                                .shadow(elevation = 4.dp)
-                                .background(MaterialTheme.colorScheme.surface)
-                                .padding(16.dp)
-                        ) {
-                            DatePicker(
-                                state = datePickerState,
-                                showModeToggle = false
-                            )
-                        }
+                        androidx.compose.material3.DatePicker(
+                            state = datePickerState,
+                            showModeToggle = false
+                        )
                     }
                 }
             }
         }
     }
+}
+
 fun convertMillisToDate(millis: Long): String {
     val formatter = SimpleDateFormat("MM/dd/yyyy", Locale.getDefault())
     return formatter.format(Date(millis))
 }
 
+
+
+@Composable
+fun TimePickers() {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceEvenly,
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+        DialExample(
+            onConfirm = { println("Confirmed") },
+            onDismiss = { println("Dismissed") }
+        )
+        InputExample(
+            onConfirm = { println("Confirmed") },
+            onDismiss = { println("Dismissed") }
+        )
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DialExample(
-
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
 ) {
+    val currentTime = Calendar.getInstance()
 
-        val currentTime = Calendar.getInstance()
+    val timePickerState = rememberTimePickerState(
+        initialHour = currentTime.get(Calendar.HOUR_OF_DAY),
+        initialMinute = currentTime.get(Calendar.MINUTE),
+        is24Hour = true,
+    )
 
-        val timePickerState = rememberTimePickerState(
-            initialHour = currentTime.get(Calendar.HOUR_OF_DAY),
-            initialMinute = currentTime.get(Calendar.MINUTE),
-            is24Hour = true,
+    Column {
+        TimePicker(
+            state = timePickerState,
         )
-
-        Column {
-            TimePicker(
-                state = timePickerState,
-            )
-
+        Button(onClick = onDismiss) {
+            Text("Dismiss picker")
+        }
+        Button(onClick = { onConfirm() }) {
+            Text("Confirm selection")
         }
     }
+}
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InputExample(
-
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit,
 ) {
     val currentTime = Calendar.getInstance()
 
@@ -682,44 +749,38 @@ fun InputExample(
         TimeInput(
             state = timePickerState,
         )
-
+        Button(onClick = onDismiss) {
+            Text("Dismiss picker")
         }
-    }
-
-@Composable
-fun TimePickers () {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceEvenly,
-        modifier = Modifier
-            .fillMaxSize()
-    ) {
-        DialExample()
-        InputExample()
-    }
-    }
-@Composable
-fun SnackBars () {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceEvenly,
-        modifier = Modifier
-            .fillMaxSize()
-    ) {
-        val snackState = remember { SnackbarHostState() }
-        val snackScope = rememberCoroutineScope()
-        SnackbarHost(hostState = snackState, Modifier)
-        fun launchSnackBar(){
-            snackScope.launch { snackState.showSnackbar("the message was sent") }
-
-        }
-        Button(::launchSnackBar){
-            Text("Show Snachbar")
+        Button(onClick = onConfirm) {
+            Text("Confirm selection")
         }
     }
 }
+
 @Composable
-fun AlertDialogs () {
+fun SnackBars() {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.SpaceEvenly,
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+        val snackState= remember { SnackbarHostState() }
+        val snackScope = rememberCoroutineScope()
+        SnackbarHost(hostState = snackState, Modifier)
+
+        fun launchSnackBar(){
+            snackScope.launch { snackState.showSnackbar("the message was sent") }
+        }
+        Button(::launchSnackBar) {
+            Text("show Snackbar")
+        }
+    }
+}
+
+@Composable
+fun AlertDialogs() {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceEvenly,
@@ -727,77 +788,91 @@ fun AlertDialogs () {
             .fillMaxSize()
     ) {
         var showAlertDialog by remember { mutableStateOf(false) }
-        var selectedOption by remember { mutableStateOf("") }
+        var selecteOption by remember { mutableStateOf("") }
 
-        if (showAlertDialog) {
+        if (showAlertDialog){
             AlertDialog(
-                icon = { Icon(Icons.Filled.Warning, contentDescription = "")},
-                title = { Text(text = "Confirm deletion") },
-                text = { Text(text = "Are ypu sure you want to delete the file?") },
-                onDismissRequest = {},
-                confirmButton = {
+                icon = { Icon(Icons.Filled.Warning, contentDescription = "") },
+                title ={ Text(text = "confirm deletion") },
+                text ={ Text(text = "Are you sure you want to delete the file") },
+                onDismissRequest={},
+                confirmButton={
                     TextButton(
-                        onClick = {
-                            selectedOption = "confirm"
+                        onClick={
+                            selecteOption="Confirm"
                             showAlertDialog=false
                         }
-                    ) { Text(text = "Confirm") }
+                    ) {Text(text = "Confirm") }
                 },
-                dismissButton = {
-                    TextButton(
+                dismissButton ={
+                    TextButton (
                         onClick = {
-                            selectedOption = "dismiss"
+                            selecteOption="Dismiss"
                             showAlertDialog=false
                         }
-                    ) { Text(text = "Confirm") }
+                    ){ Text(text = "Dismiss") }
                 }
             )
         }
-        Text(selectedOption)
-        Button(onClick = {showAlertDialog=true}) {
+        Text(selecteOption)
+        Button(onClick = {showAlertDialog= true}){
             Text("show alert dialog")
         }
     }
 }
+@Preview(showBackground = true)
 @Composable
-fun Bars(){
+private fun Bars(){
     Box(modifier = Modifier
         .fillMaxSize()
         .background(Color.DarkGray)
     ){
-        Row(modifier = Modifier
-            .align(Alignment.TopCenter)
-            .fillMaxWidth()
-            .background(Color.Black)
-            .padding(10.dp,50.dp,10.dp,10.dp),
+        Row (
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .fillMaxWidth()
+                .background(Color.Black)
+                .padding(10.dp, 50.dp, 10.dp, 10.dp),
             horizontalArrangement = Arrangement.SpaceBetween
-        ){
+        )
+        {
             Icon(Icons.Filled.Menu, contentDescription = "", tint = Color.White)
             Text(
-                text="App Title",
-                color=Color.White,
+                text = "App title",
+                color = Color.White,
                 fontWeight = FontWeight.Bold,
                 fontSize = 20.sp
             )
+
             Icon(Icons.Filled.Settings, contentDescription = "", tint = Color.White)
         }
-        var post = arrayOf(
-            PostModel(1,"Title 1", "Text1"),
-            PostModel(2,"Title 2", "Text2"),
-            PostModel(3,"Title 3", "Text3"),
-            PostModel(4,"Title 4", "Text4")
+        val post= arrayOf(
+            PostModel(1,"Title 1","Text 1",painterResource(R.drawable.android_logo)),
+            PostModel(2,"Title 2","Text 2", painterResource(R.drawable.android_logo)),
+            PostModel(3,"Title 3","Text 3", painterResource(R.drawable.android_logo)),
+            PostModel(4,"Title 4","Text 4", painterResource(R.drawable.android_logo)),
+            PostModel(5,"Title 5","Text 5",painterResource(R.drawable.android_logo)),
+            PostModel(6,"Title 6","Text 6", painterResource(R.drawable.android_logo)),
+            PostModel(7,"Title 7","Text 7", painterResource(R.drawable.android_logo)),
+            PostModel(8,"Title 8","Text 8", painterResource(R.drawable.android_logo)),
+            PostModel(9,"Title 9","Text 9", painterResource(R.drawable.android_logo)),
+            PostModel(10,"Title 10","Text 10", painterResource(R.drawable.android_logo))
         )
         Column(
             modifier = Modifier
                 .align(Alignment.TopCenter)
                 .padding(10.dp,90.dp,10.dp,50.dp)
                 .fillMaxSize()
-        ){
-            Posts(post)
+
+        )
+        {
+            // Post(post)
+            //PostCard(1,"This a card title","this is the card text", painterResource(R.drawable.android) )
+            PostGrid(post)
         }
 
 
-        Row (
+        Row(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
@@ -808,75 +883,130 @@ fun Bars(){
         ){
             Column {
                 IconButton(onClick = {}, Modifier.size(30.dp)) {
-                    Icon(Icons.Outlined.Home,
+                    Icon(
+                        Icons.Outlined.Home,
                         contentDescription = "",
                         tint = Color.White,
                         modifier = Modifier.fillMaxSize()
                     )
                 }
-                Text(text = "Home", color=Color.White)
+                Text(text = "Home", color = Color.White)
             }
             Column {
                 IconButton(onClick = {}, Modifier.size(30.dp)) {
-                    Icon(Icons.Outlined.Search,
+                    Icon(
+                        Icons.Outlined.Person,
                         contentDescription = "",
                         tint = Color.White,
                         modifier = Modifier.fillMaxSize()
                     )
                 }
-                Text(text = "Search", color=Color.White)
+                Text(text = "Login", color = Color.White)
             }
             Column {
                 IconButton(onClick = {}, Modifier.size(30.dp)) {
-                    Icon(Icons.Outlined.Favorite,
+                    Icon(
+                        Icons.Outlined.Call,
                         contentDescription = "",
                         tint = Color.White,
                         modifier = Modifier.fillMaxSize()
                     )
                 }
-                Text(text = "Favorite", color=Color.White)
+                Text(text = "call", color = Color.White)
             }
             Column {
                 IconButton(onClick = {}, Modifier.size(30.dp)) {
-                    Icon(Icons.Outlined.Notifications,
+                    Icon(
+                        Icons.Outlined.Build,
                         contentDescription = "",
                         tint = Color.White,
                         modifier = Modifier.fillMaxSize()
                     )
                 }
-                Text(text = "Alerts", color=Color.White)
+                Text(text = "Tools", color = Color.White)
             }
             Column {
                 IconButton(onClick = {}, Modifier.size(30.dp)) {
-                    Icon(Icons.Outlined.Person,
+                    Icon(
+                        Icons.Outlined.Email,
                         contentDescription = "",
                         tint = Color.White,
                         modifier = Modifier.fillMaxSize()
                     )
                 }
-                Text(text = "Profile", color=Color.White)
+                Text(text = "Mail", color = Color.White)
             }
+        }
+    }
+}
 
+@Composable
+fun Post(arrayPosts:Array<PostModel>, adaptive:String){
+    // lazyColumn y LazyRow
+    LazyColumn (
+        modifier = Modifier
+            .fillMaxSize()
+    ){
+        items(arrayPosts) { post->
+            when(adaptive){
+                "PhoneP"->{
+                    PostCardCompact(post.id,post.title,post.text,post.image)
+                }
+                "PhoneL"->{
+                    PostCard(post.id,post.title,post.text,post.image)
+                }
+            }
 
         }
     }
 }
 
 @Composable
-fun Posts(arrayPosts:Array<PostModel>){
-    LazyColumn(
+fun PostGrid(arrayPosts:Array<PostModel>){
+    LazyVerticalGrid (
+        columns = GridCells.Adaptive(minSize = 128.dp),
         modifier = Modifier
             .fillMaxSize()
-
-    ) {
-        items(arrayPosts){ post->
-            Text(
-                text = post.text,
-                color = Color.White,
-                fontSize = 16.sp
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            HorizontalDivider(thickness = 2.dp)
+    ){
+        items(arrayPosts) { post->
+            PostCard(post.id,post.title,post.text,post.image)
         }
     }
+
+}
+@Composable
+fun Adaptive (){
+   var windowsSize = currentWindowAdaptiveInfo().windowSizeClass
+    var height = currentWindowAdaptiveInfo().windowSizeClass.windowHeightSizeClass
+    var width = currentWindowAdaptiveInfo().windowSizeClass.windowWidthSizeClass
+
+    //Compact width < 600dp Phone portrait
+    //Medium width >= 600dp <840dp
+    //Expandend width >850do Tablet Landscape
+
+    //Compact height <480dp Phone landscape
+    //Medium height >= 480dp <900dp Tablet landscape or Phone portrait
+    //Expanded height > 900.dp Tablet in portrait
+    val post= arrayOf(
+        PostModel(1,"Title 1","Text 1",painterResource(R.drawable.android_logo)),
+        PostModel(2,"Title 2","Text 2", painterResource(R.drawable.android_logo)),
+        PostModel(3,"Title 3","Text 3", painterResource(R.drawable.android_logo)),
+        PostModel(4,"Title 4","Text 4", painterResource(R.drawable.android_logo)),
+        PostModel(5,"Title 5","Text 5",painterResource(R.drawable.android_logo)),
+        PostModel(6,"Title 6","Text 6", painterResource(R.drawable.android_logo)),
+        PostModel(7,"Title 7","Text 7", painterResource(R.drawable.android_logo)),
+        PostModel(8,"Title 8","Text 8", painterResource(R.drawable.android_logo)),
+        PostModel(9,"Title 9","Text 9", painterResource(R.drawable.android_logo)),
+        PostModel(10,"Title 10","Text 10", painterResource(R.drawable.android_logo))
+    )
+    if (width == WindowWidthSizeClass.COMPACT){
+        Post(post, "PhoneP")
+    } else if(height == WindowHeightSizeClass.COMPACT ){
+        Post(post, "PhoneL")
+    } else {
+        Post(post, "PhoneL")
+
+
+}
+   // Text(text = windowsSize.toString())
 }
