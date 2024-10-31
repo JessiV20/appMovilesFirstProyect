@@ -56,6 +56,7 @@ import com.example.myfirstapplication.ui.screens.HomeScreen
 import com.example.myfirstapplication.ui.screens.MenuScreen
 import com.example.myfirstapplication.ui.theme.MyFirstApplicationTheme
 import com.example.myfirstapplication.ui.screens.HomeScreen
+import com.example.myfirstapplication.ui.screens.LoginScreen
 import com.example.myfirstapplication.ui.screens.MenuScreen
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -316,9 +317,10 @@ fun ComposeMultiScreenApp(){
 
 @Composable
 fun SetupNavGraph(navController: NavHostController){
-    NavHost(navController = navController, startDestination = "menu"){
+    NavHost(navController = navController, startDestination = "Login"){
         composable("menu"){ MenuScreen(navController)}
         composable("home"){ HomeScreen(navController)}
         composable("components"){ ComponentsScreen(navController) }
+        composable("Login"){ LoginScreen(navController) }
     }
 }
