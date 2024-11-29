@@ -1,6 +1,5 @@
 package com.example.myfirstapplication.viewModel
 
-
 import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf

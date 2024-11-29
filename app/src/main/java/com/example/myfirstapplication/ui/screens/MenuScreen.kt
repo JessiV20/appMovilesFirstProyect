@@ -1,4 +1,5 @@
 package com.example.myfirstapplication.ui.screens
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -29,44 +30,48 @@ fun MenuScreen(navController: NavController) {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(text = "ApiSegundoPlano 1")
+        Text(text = "presentation 1")
         Button(onClick = { navController.navigate("SegundoPlano") }) {
             Text("Go to alarm")
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(text = "ApiGeolocalizacion")
+        Text(text = "presentation 2")
         Button(onClick = { navController.navigate("Location") }) {
             Text("Go to location")
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(text = "ApiCalendario")
+        Text(text = "presentation 3")
         Button(onClick = { navController.navigate("ContactCalendar") }) {
             Text("Contact and Calendar")
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(text = "ApiBiometricos")
+        Text(text = "presentation 4")
         Button(onClick = {navController.navigate("BiometricsScreen")}) {
             Text("Go to Biometrics")
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(text = "ApiCamaraYArchivos")
+        Text(text = "presentation 5")
         Button(onClick = { navController.navigate("CamaraScreen") }) {
             Text("Camera and files")
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Text(text = "ApiWifi")
+        Text(text = "presentation 6")
         Button(onClick = {navController.navigate("wifidatos")}) {
             Text("Go to Wifi-Datos")
+        }
+        Text(text = "Test-App")
+        Button(onClick = {navController.navigate("home")}) {
+            Text("HomeScreen")
         }
 
     }
