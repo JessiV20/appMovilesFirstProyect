@@ -2,6 +2,7 @@ package com.example.myfirstapplication.ui.screens
 
 
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -33,6 +34,7 @@ import com.example.myfirstapplication.R
 import com.example.myfirstapplication.data.model.ServiceModel
 import com.example.myfirstapplication.data.model.controller.ServiceViewModel
 import com.example.myfirstapplication.data.model.dao.ServiceDao
+import com.example.myfirstapplication.data.model.toServiceEntity
 import com.example.myfirstapplication.database.AppDatabase
 import com.example.myfirstapplication.database.DatabaseProvider
 import com.example.myfirstapplication.ui.components.TopBar
@@ -64,6 +66,7 @@ fun ManageServiceScreen(
                 service.value.username = response.body()?.username.toString()
                 service.value.password = response.body()?.password.toString()
                 service.value.description = response.body()?.description.toString()
+                service.value.imageURL = response.body()?.imageURL.toString()
             } else {
                 Toast.makeText(
                     context,
@@ -163,6 +166,7 @@ fun ManageServiceScreen(
                     focusedLabelColor = Color.White
                 ),
             )
+
             FilledTonalButton(
                 colors = ButtonDefaults.buttonColors(
                     containerColor = colorResource(R.color.purple_500),
@@ -177,7 +181,8 @@ fun ManageServiceScreen(
                         name = service.value.name,
                         username = service.value.username,
                         password = service.value.password,
-                        description = service.value.description
+                        description = service.value.description,
+                        imageURL = service.value.imageURL
                     )
                     save(viewModel, context, serviceTemp, serviceId)
                 }
@@ -209,47 +214,45 @@ fun ManageServiceScreen(
         }
     }
 }
-
 fun save(
     viewModel: ServiceViewModel,
     context: Context,
     service: ServiceModel,
     serviceId: String?
 ) {
+    val db: AppDatabase = DatabaseProvider.getDatabase(context)
+    val serviceDao = db.serviceDao()
+
     if (serviceId == "0") {
-        viewModel.createService(service) { response ->
-            if (response.isSuccessful) {
-                Toast.makeText(
-                    context,
-                    "Service created successfully",
-                    Toast.LENGTH_SHORT
-                ).show()
-            } else {
-                Toast.makeText(
-                    context,
-                    "Error: $${response.body()}",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
+        // Crear un nuevo servicio, la base de datos asignará un ID autoincremental
+        val serviceEntity = service.toServiceEntity()
+        CoroutineScope(Dispatchers.IO).launch {
+            serviceDao.insert(serviceEntity) // Inserta el servicio, la DB asigna un ID
+            Log.d("Database", "Service inserted: ${serviceEntity}")
         }
-    } else if (serviceId != null) {
-        viewModel.updateService(serviceId.toInt(), service) { response ->
-            if (response.isSuccessful) {
-                Toast.makeText(
-                    context,
-                    "Service updated successfully",
-                    Toast.LENGTH_SHORT
-                ).show()
-            } else {
-                Toast.makeText(
-                    context,
-                    "Error: $${response.body()}",
-                    Toast.LENGTH_SHORT
-                ).show()
+        Toast.makeText(context, "Service created successfully", Toast.LENGTH_SHORT).show()
+    } else {
+        // Actualizar un servicio existente
+        serviceId?.let {
+            viewModel.updateService(it.toInt(), service) { response ->
+                if (response.isSuccessful) {
+                    val serviceEntity = response.body()?.toServiceEntity()
+                    serviceEntity?.let {
+                        CoroutineScope(Dispatchers.IO).launch {
+                            serviceDao.insert(serviceEntity) // Actualiza o inserta
+                            Log.d("Database", "Service updated or inserted: $serviceEntity")
+                        }
+                    }
+                    Toast.makeText(context, "Service updated successfully", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(context, "Error: ${response.body()}", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
 }
+
+
 
 fun delete(
     viewModel: ServiceViewModel,

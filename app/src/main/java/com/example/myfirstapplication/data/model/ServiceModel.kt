@@ -1,4 +1,5 @@
 package com.example.myfirstapplication.data.model
+import android.util.Log
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
@@ -23,6 +24,7 @@ data class ServiceEntity(
 )
 
 fun ServiceModel.toServiceEntity(): ServiceEntity {
+    Log.d("Database", "Converting ServiceModel to ServiceEntity: $this")
     return ServiceEntity(
         id = this.id,
         name = this.name,
