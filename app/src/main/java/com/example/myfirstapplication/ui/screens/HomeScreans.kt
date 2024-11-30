@@ -50,11 +50,8 @@ fun HomeScreen(
 ) {
     val db: AppDatabase = DatabaseProvider.getDatabase(LocalContext.current)
 
-    var serviceDetail by remember { mutableStateOf<ServiceModel?>(null) }
-    var sheetState = rememberModalBottomSheetState(
-        skipPartiallyExpanded = false
-    )
-
+    var serviceDetail by remember { mutableStateOf<ServiceEntity?>(null) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
     var showBottomSheet by remember { mutableStateOf(false) }
 
     var services by remember { mutableStateOf<List<ServiceEntity>>(emptyList()) }
@@ -67,32 +64,29 @@ fun HomeScreen(
                 containerColor = Color.Black,
                 contentColor = Color.White
             ) {
+                // Aquí puedes agregar contenido si es necesario
             }
         },
         floatingActionButton = {
             FloatingActionButton(
                 containerColor = colorResource(R.color.purple_500),
                 contentColor = Color.Black,
-                onClick = {
-                    navController.navigate("manage-service/0")
-                }) {
+                onClick = { navController.navigate("manage-service/0") }
+            ) {
                 Icon(Icons.Default.Add, contentDescription = "Add icon")
             }
         }
     ) { innerPadding ->
 
-
-        if (services.isEmpty()) {
-            CircularProgressIndicator()
-        }
+        // Cargar servicios al iniciar la pantalla
         LaunchedEffect(Unit) {
             services = withContext(Dispatchers.IO) {
-                viewModel.getServices(db)
-                serviceDao.getAll()
+                serviceDao.getAll() // Obtener todos los servicios de la base de datos
             }
         }
 
         val listState = rememberLazyListState()
+
         LazyColumn(
             modifier = Modifier
                 .padding(innerPadding)
@@ -100,27 +94,31 @@ fun HomeScreen(
                 .fillMaxSize(),
             state = listState
         ) {
-            Log.d("debuginfo", services.toString())
             items(services) { service ->
-                ServiceCard(service.id, service.name, service.username, service.imageURL,
+                ServiceCard(
+                    service.id,
+                    service.name,
+                    service.username,
+                    service.imageURL,
                     onButtonClick = {
-                        viewModel.showService(service.id) { response ->
-                            if (response.isSuccessful) {
-                                serviceDetail = response.body()
+                        viewModel.showService(db, service.id) { entity ->
+                            if (entity != null) {
+                                serviceDetail = entity // Actualizar detalles del servicio
+                                showBottomSheet = true // Mostrar el modal
+                            } else {
+                                Log.d("error", "No se encontró el servicio.")
                             }
                         }
-                        showBottomSheet = true
                     }
                 )
             }
         }
+
+        // Mostrar ModalBottomSheet si showBottomSheet es true
         if (showBottomSheet) {
             ModalBottomSheet(
-                containerColor = colorResource(id = R.color.teal_200),
-                contentColor = Color.White,
-                modifier = Modifier.fillMaxHeight(),
-                onDismissRequest = { showBottomSheet = false },
-                sheetState = sheetState
+                sheetState = sheetState,
+                onDismissRequest = { showBottomSheet = false }
             ) {
                 ServiceDetailCard(
                     id = serviceDetail?.id ?: 0,
@@ -138,18 +136,3 @@ fun HomeScreen(
         }
     }
 }
-
-
-/*
-Column (
-    modifier = Modifier
-        .fillMaxSize()
-){
-    Text(text = "This is the HomeScreen")
-    Button(onClick = {navController.navigate("menu")}) {
-        Text(text = "MenuScreen")
-    }
-    Button(onClick = {navController.navigate("components")}) {
-        Text(text = "ComponentScreen")
-    }
-}*/

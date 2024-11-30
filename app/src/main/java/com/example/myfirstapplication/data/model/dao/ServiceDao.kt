@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import com.example.myfirstapplication.data.model.ServiceEntity
 
 @Dao
@@ -14,6 +15,7 @@ interface ServiceDao {
 
     @Query("SELECT * FROM ServiceEntity WHERE id=:ServiceId")
     fun show(ServiceId:Int):ServiceEntity
+
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insert(service: ServiceEntity)
@@ -25,6 +27,10 @@ interface ServiceDao {
     @Delete
     fun delete (service:ServiceEntity)
 
+    @Update
+    fun update(service: ServiceEntity)
+
     @Query("SELECT MAX(id) FROM ServiceEntity")
-    fun getLastId(): Int?
+    fun getMaxId(): Int
+
 }

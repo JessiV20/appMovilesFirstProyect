@@ -31,6 +31,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.myfirstapplication.R
+import com.example.myfirstapplication.data.model.ServiceEntity
 import com.example.myfirstapplication.data.model.ServiceModel
 import com.example.myfirstapplication.data.model.controller.ServiceViewModel
 import com.example.myfirstapplication.data.model.dao.ServiceDao
@@ -41,6 +42,7 @@ import com.example.myfirstapplication.ui.components.TopBar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 @Composable
@@ -60,14 +62,15 @@ fun ManageServiceScreen(
 
     if(serviceId != null && serviceId != "0"){
         bar_title = "Update service"
-        viewModel.showService(serviceId.toInt()){ response ->
-            if(response.isSuccessful){
-                service.value.name = response.body()?.name.toString()
-                service.value.username = response.body()?.username.toString()
-                service.value.password = response.body()?.password.toString()
-                service.value.description = response.body()?.description.toString()
-                service.value.imageURL = response.body()?.imageURL.toString()
+        viewModel.showService(db, serviceId.toInt()) { entity ->
+            if (entity != null) {
+                // Actualizar los valores del estado con los datos recuperados
+                service.value.name = entity.name
+                service.value.username = entity.username
+                service.value.password = entity.password
+                service.value.description = entity.description
             } else {
+                // Mostrar un mensaje si no se pudo cargar el servicio
                 Toast.makeText(
                     context,
                     "Failed to load a service",
@@ -213,8 +216,7 @@ fun ManageServiceScreen(
             }
         }
     }
-}
-fun save(
+}fun save(
     viewModel: ServiceViewModel,
     context: Context,
     service: ServiceModel,
@@ -224,28 +226,77 @@ fun save(
     val serviceDao = db.serviceDao()
 
     if (serviceId == "0") {
-        // Crear un nuevo servicio, la base de datos asignará un ID autoincremental
-        val serviceEntity = service.toServiceEntity()
+        // Generar un ID único basado en el siguiente número disponible
         CoroutineScope(Dispatchers.IO).launch {
-            serviceDao.insert(serviceEntity) // Inserta el servicio, la DB asigna un ID
-            Log.d("Database", "Service inserted: ${serviceEntity}")
+            var newId: Int
+            do {
+                // Obtener el ID máximo actual de la base de datos
+                newId = serviceDao.getMaxId() + 1 // Incrementamos 1 al ID máximo
+
+                // Verificamos si el nuevo ID ya existe en la base de datos
+            } while (serviceDao.show(newId) != null)  // Si ya existe, seguimos buscando
+
+            // Crear un nuevo servicio con el ID generado
+            val serviceEntity = service.copy(id = newId).toServiceEntity()
+
+            // Insertar el servicio con el nuevo ID en la base de datos local
+            serviceDao.insert(serviceEntity)
+            Log.d("Database", "Service inserted with new ID: ${serviceEntity.id}")
+
+            // Subir el servicio de forma remota
+            viewModel.createService(service.copy(id = newId)) { response ->
+                if (response.isSuccessful) {
+                    val createdService = response.body()
+                    if (createdService != null) {
+                        Log.d("API", "Service successfully created remotely: ${createdService.id}")
+                        Toast.makeText(context, "Service created successfully", Toast.LENGTH_SHORT).show()
+
+                        // Ahora verificamos si el servicio se guardó correctamente en el servidor
+                        viewModel.getServiceById(createdService.id) { getResponse ->
+                            if (getResponse.isSuccessful) {
+                                // Verificar que el servicio existe en la base de datos remota
+                                Log.d("API", "Service confirmed to be in remote DB: ${getResponse.body()?.id}")
+                            } else {
+                                Log.e("API", "Failed to fetch service from remote DB: ${getResponse.message()}")
+                            }
+                        }
+                    } else {
+                        Log.e("API", "The service creation response body is null.")
+                        Toast.makeText(context, "Error: Invalid response from server", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    Log.e("API", "Failed to create service remotely: ${response.message()}")
+                    Toast.makeText(context, "Error: ${response.message()}", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
-        Toast.makeText(context, "Service created successfully", Toast.LENGTH_SHORT).show()
     } else {
         // Actualizar un servicio existente
-        serviceId?.let {
-            viewModel.updateService(it.toInt(), service) { response ->
-                if (response.isSuccessful) {
-                    val serviceEntity = response.body()?.toServiceEntity()
-                    serviceEntity?.let {
-                        CoroutineScope(Dispatchers.IO).launch {
-                            serviceDao.insert(serviceEntity) // Actualiza o inserta
-                            Log.d("Database", "Service updated or inserted: $serviceEntity")
-                        }
-                    }
-                    Toast.makeText(context, "Service updated successfully", Toast.LENGTH_SHORT).show()
-                } else {
-                    Toast.makeText(context, "Error: ${response.body()}", Toast.LENGTH_SHORT).show()
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                val updatedEntity = ServiceEntity(
+                    id = serviceId!!.toInt(),
+                    name = service.name,
+                    username = service.username,
+                    password = service.password,
+                    description = service.description,
+                    imageURL = service.imageURL,
+                )
+                serviceDao.update(updatedEntity) // Actualizar en la BD local
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(
+                        context,
+                        "Service updated successfully",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            } catch (exception: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(
+                        context,
+                        "Failed to update service: ${exception.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             }
         }
@@ -262,26 +313,26 @@ fun delete(
     serviceDao: ServiceDao
 ) {
     if (serviceId != null && serviceId != "0") {
-        viewModel.deleteService(serviceId.toInt()) { response ->
-            if (response.isSuccessful) {
-                //
-                CoroutineScope(Dispatchers.IO).launch{
-                    val service=serviceDao.show(serviceId.toInt())
-                    serviceDao.delete(service)
+        CoroutineScope(Dispatchers.IO).launch {
+            val service = serviceDao.show(serviceId.toInt())
+            if (service != null) {
+                serviceDao.delete(service)
+                CoroutineScope(Dispatchers.Main).launch {
+                    Toast.makeText(
+                        context,
+                        "Service deleted successfully",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    navController.popBackStack()
                 }
-                //
-                Toast.makeText(
-                    context,
-                    "Service deleted successfully",
-                    Toast.LENGTH_SHORT
-                ).show()
-                navController.popBackStack()
             } else {
-                Toast.makeText(
-                    context,
-                    "Failed to delete service",
-                    Toast.LENGTH_SHORT
-                ).show()
+                CoroutineScope(Dispatchers.Main).launch {
+                    Toast.makeText(
+                        context,
+                        "Failed to delete service: Service not found",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
         }
     }

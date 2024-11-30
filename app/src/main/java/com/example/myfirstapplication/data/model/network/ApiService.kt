@@ -25,7 +25,8 @@ interface ApiService {
         @Path("id") id: Int,
         @Body service: ServiceModel
     ): Response<ServiceModel>
-
+    @GET("service/{id}")
+    suspend fun getServiceById(@Path("id") serviceId: Int): Response<ServiceModel>
     @DELETE("service/{id}")
     suspend fun deleteService(@Path("id") id: Int): Response<ServiceModel>
 
