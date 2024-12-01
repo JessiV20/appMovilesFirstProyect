@@ -29,5 +29,6 @@ interface ApiService {
     suspend fun getServiceById(@Path("id") serviceId: Int): Response<ServiceModel>
     @DELETE("service/{id}")
     suspend fun deleteService(@Path("id") id: Int): Response<ServiceModel>
-
+    @POST("user")
+    suspend fun login(@Body request: LoginRequest): Response<LoginResponse>
 }
